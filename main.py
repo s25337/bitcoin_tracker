@@ -6,7 +6,7 @@ import requests
 app = Flask(__name__)
 
 # 🔁 Testnet API
-MEMPOOL_BASE_URL = "https://mempool.space/testnet4/api"
+MEMPOOL_BASE_URL = "https://mempool.space/api"
 
 # Pobieranie danych o transakcji
 def get_tx_details(txid):
