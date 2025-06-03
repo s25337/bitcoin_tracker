@@ -1,0 +1,7 @@
+{
+  "txid": "tx_1",
+  "vout": [
+    { "scriptpubkey_address": "addr_A" },
+    { "scriptpubkey_address": "addr_B" }
+  ]
+}
