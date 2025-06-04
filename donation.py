@@ -44,7 +44,7 @@ def track_and_display(address, label, listbox):
     def update():
         while True:
             amount = fetch_received(address)
-            label.config(text=f"💰 Otrzymano: {amount:.8f} BTC")
+            label.config(text=f"Otrzymano: {amount:.8f} BTC")
             if amount > 0:
                 get_transaction_history(listbox, label)
             time.sleep(10)
