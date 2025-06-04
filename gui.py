@@ -5,6 +5,9 @@ import networkx as nx
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
+
+# 3aef92ba8cc936b51eee74d117b8e882fc70b57e0d5dea85de3a6d10bb674ce4
+
 def analyze_tx(mode):
     txid = entry.get().strip()
     if not txid:
@@ -77,7 +80,7 @@ def analyze_tx(mode):
     fig = plt.Figure(figsize=(11, 9), dpi=100)
     ax = fig.add_subplot(111)
 
-    # Specjalny układ: wejścia – centrum – wyjścia
+    # wejścia – centrum – wyjścia
     if mode == "full":
         shells = [[], [txid], []]  # left, center, right
 
@@ -123,9 +126,9 @@ entry.pack(side=tk.LEFT, padx=5)
 btn_frame = tk.Frame(root)
 btn_frame.pack(pady=5)
 
-tk.Button(btn_frame, text="🔽 Wyjścia", command=lambda: analyze_tx("outputs")).pack(side=tk.LEFT, padx=5)
-tk.Button(btn_frame, text="🔼 Wejścia", command=lambda: analyze_tx("inputs")).pack(side=tk.LEFT, padx=5)
-tk.Button(btn_frame, text="🔁 Całość", command=lambda: analyze_tx("full")).pack(side=tk.LEFT, padx=5)
+tk.Button(btn_frame, text="Wyjścia", command=lambda: analyze_tx("outputs")).pack(side=tk.LEFT, padx=5)
+tk.Button(btn_frame, text="Wejścia", command=lambda: analyze_tx("inputs")).pack(side=tk.LEFT, padx=5)
+tk.Button(btn_frame, text="Całość", command=lambda: analyze_tx("full")).pack(side=tk.LEFT, padx=5)
 
 frame = tk.Frame(root)
 frame.pack(fill=tk.BOTH, expand=True)
