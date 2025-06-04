@@ -112,6 +112,27 @@ def analyze_tx(mode, entry, frame):
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+# ===Fishy===
+def show_suspicion():
+    txid = entry_suspicion.get().strip()
+    if not txid:
+        messagebox.showwarning("Błąd", "Podaj ID transakcji!")
+        return
+
+    try:
+        response = requests.get(f"http://127.0.0.1:5000/suspicion/{txid}")
+        response.raise_for_status()
+        result = response.json()
+        score = result["score"]
+        reasons = result["reasons"]
+
+        suspicion_var.set(f"{score}% podejrzana")
+        reasons_text.delete("1.0", tk.END)
+        for r in reasons:
+            reasons_text.insert(tk.END, f"- {r}\n")
+
+    except Exception as e:
+        messagebox.showerror("Błąd", str(e))
 
 # === PORTFEL ===
 def generate_wallet():
@@ -211,4 +232,20 @@ tk.Button(wallet_frame, text="Odśwież historię", command=lambda: get_transact
 
 track_and_display(btc_address, status_label, tx_listbox)
 
+tab3 = tk.Frame(notebook)
+notebook.add(tab3, text="Podejrzaność")
+
+suspicion_top = tk.Frame(tab3)
+suspicion_top.pack(pady=10)
+
+tk.Label(suspicion_top, text="ID transakcji:").pack(side=tk.LEFT)
+entry_suspicion = tk.Entry(suspicion_top, width=60)
+entry_suspicion.pack(side=tk.LEFT, padx=5)
+tk.Button(suspicion_top, text="Oblicz", command=show_suspicion).pack(side=tk.LEFT)
+
+suspicion_var = tk.StringVar()
+tk.Label(tab3, textvariable=suspicion_var, font=("Arial", 16)).pack(pady=10)
+
+reasons_text = tk.Text(tab3, height=15, width=100)
+reasons_text.pack(pady=10)
 root.mainloop()

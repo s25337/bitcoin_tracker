@@ -2,6 +2,7 @@
 import traceback
 from flask import Flask, jsonify
 import requests
+from fishy_meter import calculate_suspicion_score
 
 app = Flask(__name__)
 
@@ -153,6 +154,15 @@ def trace_inputs_endpoint(txid):
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/suspicion/<txid>", methods=["GET"])
+def suspicion(txid):
+    try:
+        tx_data = get_tx_details(txid)
+        score, reasons = calculate_suspicion_score(tx_data)
+        return jsonify({"score": score, "reasons": reasons})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
