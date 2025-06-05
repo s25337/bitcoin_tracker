@@ -201,21 +201,43 @@ def track_and_display(address, label, listbox):
             time.sleep(10)
     threading.Thread(target=update, daemon=True).start()
 
-def get_transaction_history(listbox, label):
+def get_transaction_history(status_label, full_history_text, total_label, latest_label):
     try:
-        txs = rpc("listtransactions", ["*", 10, 0, True])
-        listbox.delete(0, tk.END)
+        txs = rpc("listtransactions", ["*", 100, 0, True])
+        total = 0.0
+        latest_line = ""
+        full_history_text.config(state="normal")
+        full_history_text.delete("1.0", tk.END)
+
         for tx in reversed(txs):
             if tx.get("category") == "receive":
-                line = f"{tx['amount']:.8f} BTC | {tx['confirmations']} konf | {tx['txid'][:8]}..."
-                listbox.insert(tk.END, line)
-        label.config(text="✅ Historia załadowana")
+                line = f"{tx['amount']:.8f} BTC | {tx['confirmations']} potwierdzeń | {tx['txid']}"
+                full_history_text.insert(tk.END, line + "\n")
+                total += tx["amount"]
+                if not latest_line:
+                    latest_line = line
+
+        full_history_text.config(state="disabled")
+        total_label.config(text=f"💰 Suma wpłat: {total:.8f} BTC")
+        latest_label.config(text=f"🙏 Ostatnia transakcja:\n{latest_line}")
+        status_label.config(text="✅ Historia załadowana")
     except Exception as e:
-        label.config(text=f"❌ Błąd historii: {e}")
+        status_label.config(text=f"❌ Błąd historii: {e}")
+
+def track_and_display(address, label, full_history_text, total_label, latest_label):
+    def update():
+        while True:
+            amount = fetch_received(address)
+            label.config(text=f"Otrzymano: {amount:.8f} BTC")
+            if amount > 0:
+                get_transaction_history(label, full_history_text, total_label, latest_label)
+            time.sleep(10)
+    threading.Thread(target=update, daemon=True).start()
+
 
 # === GUI ===
 root = tk.Tk()
-root.title("Bitcoin: Transakcje i Portfel")
+root.title("Bitcoin: Transakcje")
 root.geometry("1150x850")
 
 notebook = ttk.Notebook(root)
@@ -244,34 +266,54 @@ tk.Button(btn_frame, text="Całość", command=lambda: analyze_tx("full", entry,
 
 # === Zakładka 2: Portfel i QR ===
 tab2 = tk.Frame(notebook)
-notebook.add(tab2, text="Odbieranie wpłat")
+notebook.add(tab2, text="Donacje i historia")
 
 wallet_frame = tk.Frame(tab2)
 wallet_frame.pack(pady=20)
 
-tk.Label(wallet_frame, text="Donations").pack()
-
 btc_address = generate_wallet()
 img = generate_qr(btc_address)
+
+left_frame = tk.Frame(wallet_frame)
+left_frame.grid(row=0, column=0, padx=10)
+right_frame = tk.Frame(wallet_frame)
+right_frame.grid(row=0, column=1, padx=10)
+
+# Lewa kolumna
+tk.Label(left_frame, text="📬 Adres do wpłat:").pack()
+tk.Label(left_frame, text=btc_address, font=("Courier", 9)).pack(pady=5)
+entry_result = tk.Entry(left_frame, width=60)
+entry_result.insert(0, btc_address)
+entry_result.config(state="readonly")
+entry_result.pack(pady=5)
 
 fig2, ax2 = plt.subplots(figsize=(3, 3))
 ax2.imshow(img, cmap='gray')
 ax2.axis("off")
-canvas2 = FigureCanvasTkAgg(fig2, master=wallet_frame)
+canvas2 = FigureCanvasTkAgg(fig2, master=left_frame)
 canvas2.draw()
 canvas2.get_tk_widget().pack()
 
-tk.Label(wallet_frame, text=btc_address, font=("Courier", 9)).pack(pady=5)
+# Prawa kolumna
+summary_frame = tk.Frame(right_frame)
+summary_frame.pack(pady=5)
 
-status_label = tk.Label(wallet_frame, text="Oczekiwanie na wpłatę...", fg="blue")
+total_label = tk.Label(summary_frame, text="💰 Suma wpłat: 0.00000000 BTC", font=("Arial", 12))
+total_label.pack()
+latest_label = tk.Label(summary_frame, text="🙏 Ostatnia transakcja:", justify="left")
+latest_label.pack(pady=5)
+
+status_label = tk.Label(right_frame, text="Oczekiwanie na wpłatę...", fg="blue")
 status_label.pack(pady=5)
 
-tk.Label(wallet_frame, text="Historia transakcji").pack()
-tx_listbox = tk.Listbox(wallet_frame, width=60)
-tx_listbox.pack(pady=5)
-tk.Button(wallet_frame, text="Odśwież historię", command=lambda: get_transaction_history(tx_listbox, status_label)).pack(pady=3)
+full_history_text = scrolledtext.ScrolledText(right_frame, height=20, width=80, state="disabled")
+full_history_text.pack(pady=5)
 
-track_and_display(btc_address, status_label, tx_listbox)
+refresh_btn = tk.Button(right_frame, text="🔄 Odśwież", command=lambda: get_transaction_history(status_label, full_history_text, total_label, latest_label))
+refresh_btn.pack(pady=5)
+
+track_and_display(btc_address, status_label, full_history_text, total_label, latest_label)
+
  # == TAB 3
 tab3 = tk.Frame(notebook)
 notebook.add(tab3, text="Podejrzaność")

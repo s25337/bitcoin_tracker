@@ -56,7 +56,7 @@ def get_transaction_history(listbox, label):
         listbox.delete(0, tk.END)
         for tx in reversed(txs):
             if tx.get("category") == "receive":
-                line = f"{tx['amount']:.8f} BTC | {tx['confirmations']} konf | {tx['txid'][:8]}..."
+                line = f"{tx['amount']:.8f} BTC | {tx['confirmations']} potwierdzen | {tx['txid'][:8]} id"
                 listbox.insert(tk.END, line)
         label.config(text="✅ Historia załadowana")
     except Exception as e:
