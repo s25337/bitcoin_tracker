@@ -1,15 +1,16 @@
 
-import tkinter as tk
-from tkinter import messagebox, ttk
-from PIL import Image, ImageTk
-import requests
-import networkx as nx
-import qrcode
 import threading
 import time
-from io import BytesIO
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import tkinter as tk
+from tkinter import messagebox, ttk, scrolledtext
+
 import matplotlib.pyplot as plt
+import networkx as nx
+import qrcode
+import requests
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+from block_explorer import get_block_by_height, get_block_details, get_block_txs
 
 # === RPC KONFIGURACJA ===
 RPC_USER = "mojuser"
@@ -133,6 +134,46 @@ def show_suspicion():
 
     except Exception as e:
         messagebox.showerror("Błąd", str(e))
+# == BLOK ===
+def create_block_explorer_tab(notebook):
+    tab4 = tk.Frame(notebook)
+    notebook.add(tab4, text="Eksplorator bloków")
+
+    top_frame = tk.Frame(tab4)
+    top_frame.pack(pady=10)
+
+    tk.Label(top_frame, text="Wysokość bloku:").pack(side=tk.LEFT)
+    height_entry = tk.Entry(top_frame, width=20)
+    height_entry.pack(side=tk.LEFT, padx=5)
+
+    result_text = scrolledtext.ScrolledText(tab4, width=100, height=30)
+    result_text.pack(pady=10, padx=10)
+
+    def fetch_block_data():
+        height_str = height_entry.get().strip()
+        if not height_str.isdigit():
+            messagebox.showerror("Błąd", "Wpisz prawidłową wysokość bloku (liczbę).")
+            return
+        try:
+            block_hash = get_block_by_height(int(height_str))
+            block_data = get_block_details(block_hash)
+            txs = get_block_txs(block_hash)
+
+            result_text.delete("1.0", tk.END)
+            result_text.insert(tk.END, f"Hash: {block_data.get('id')}\n")
+            result_text.insert(tk.END, f"Czas: {block_data.get('timestamp')}\n")
+            result_text.insert(tk.END, f"Ilość transakcji: {block_data.get('tx_count')}\n")
+            result_text.insert(tk.END, f"Rozmiar: {block_data.get('size')} B\n")
+            result_text.insert(tk.END, f"Wysokość: {block_data.get('height')}\n")
+            result_text.insert(tk.END, "-" * 60 + "\n")
+            result_text.insert(tk.END, "Transakcje:\n")
+            for txid in txs[:100]:
+                result_text.insert(tk.END, f"{txid}\n")
+
+        except Exception as e:
+            messagebox.showerror("Błąd", str(e))
+
+    tk.Button(top_frame, text="Pobierz", command=fetch_block_data).pack(side=tk.LEFT, padx=5)
 
 # === PORTFEL ===
 def generate_wallet():
@@ -231,7 +272,7 @@ tx_listbox.pack(pady=5)
 tk.Button(wallet_frame, text="Odśwież historię", command=lambda: get_transaction_history(tx_listbox, status_label)).pack(pady=3)
 
 track_and_display(btc_address, status_label, tx_listbox)
-
+ # == TAB 3
 tab3 = tk.Frame(notebook)
 notebook.add(tab3, text="Podejrzaność")
 
@@ -248,4 +289,7 @@ tk.Label(tab3, textvariable=suspicion_var, font=("Arial", 16)).pack(pady=10)
 
 reasons_text = tk.Text(tab3, height=15, width=100)
 reasons_text.pack(pady=10)
+
+create_block_explorer_tab(notebook)
+
 root.mainloop()
