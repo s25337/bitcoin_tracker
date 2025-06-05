@@ -219,10 +219,10 @@ def get_transaction_history(status_label, full_history_text, total_label, latest
 
         full_history_text.config(state="disabled")
         total_label.config(text=f"💰 Suma wpłat: {total:.8f} BTC")
-        latest_label.config(text=f"🙏 Ostatnia transakcja:\n{latest_line}")
-        status_label.config(text="✅ Historia załadowana")
+        latest_label.config(text=f"Ostatnia transakcja:\n{latest_line}")
+        status_label.config(text="Historia załadowana")
     except Exception as e:
-        status_label.config(text=f"❌ Błąd historii: {e}")
+        status_label.config(text=f"Błąd historii: {e}")
 
 def track_and_display(address, label, full_history_text, total_label, latest_label):
     def update():
@@ -280,8 +280,8 @@ right_frame = tk.Frame(wallet_frame)
 right_frame.grid(row=0, column=1, padx=10)
 
 # Lewa kolumna
-tk.Label(left_frame, text="📬 Adres do wpłat:").pack()
-tk.Label(left_frame, text=btc_address, font=("Courier", 9)).pack(pady=5)
+tk.Label(left_frame, text="Adres do wpłat:").pack()
+#tk.Label(left_frame, text=btc_address, font=("Courier", 9)).pack(pady=5)
 entry_result = tk.Entry(left_frame, width=60)
 entry_result.insert(0, btc_address)
 entry_result.config(state="readonly")
@@ -300,7 +300,7 @@ summary_frame.pack(pady=5)
 
 total_label = tk.Label(summary_frame, text="💰 Suma wpłat: 0.00000000 BTC", font=("Arial", 12))
 total_label.pack()
-latest_label = tk.Label(summary_frame, text="🙏 Ostatnia transakcja:", justify="left")
+latest_label = tk.Label(summary_frame, text="Ostatnia transakcja:", justify="left")
 latest_label.pack(pady=5)
 
 status_label = tk.Label(right_frame, text="Oczekiwanie na wpłatę...", fg="blue")
@@ -309,7 +309,7 @@ status_label.pack(pady=5)
 full_history_text = scrolledtext.ScrolledText(right_frame, height=20, width=80, state="disabled")
 full_history_text.pack(pady=5)
 
-refresh_btn = tk.Button(right_frame, text="🔄 Odśwież", command=lambda: get_transaction_history(status_label, full_history_text, total_label, latest_label))
+refresh_btn = tk.Button(right_frame, text="Odśwież", command=lambda: get_transaction_history(status_label, full_history_text, total_label, latest_label))
 refresh_btn.pack(pady=5)
 
 track_and_display(btc_address, status_label, full_history_text, total_label, latest_label)
